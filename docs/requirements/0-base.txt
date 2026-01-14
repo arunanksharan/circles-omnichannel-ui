@@ -1,0 +1,606 @@
+ultrathink and Approach this exactly like a **production-grade demo UI** that a senior Next.js engineer would build to *tell the story clearly* to stakeholders and engineers.
+
+Use:
+
+ Nextjs for frontend web portal, client portal, candidate portal and any other portal/webapp you can think of. We can choose to keep all these as separate products - with typescript, zustand, tailwind css, react tanstack query, next-auth
+
+You can analyse the following dependencies and see what is needed and can be used for buttery smooth and awesome UI/UX
+Analyse the dependencies and explain what each do.
+I am looking for awesome templates for landing pages and web portal I can use directly for nextjs/reactjs setup
+Be ready to build Stripe-level animated hero sections or Apple Vision Pro demo-tier visuals.
+
+dependencies": {
+    "@gsap/react": "^2.1.2",
+    "@lobehub/icons": "^4.0.2",
+    "@lobehub/ui": "^4.4.5",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.4.2",
+    "@types/three": "^0.182.0",
+    "antd": "^6.1.3",
+    "antd-style": "^4.1.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.26",
+    "geist": "^1.5.1",
+    "gsap": "^3.14.2",
+    "lenis": "^1.3.16",
+    "lucide-react": "^0.562.0",
+    "motion": "^12.24.0",
+    "next": "16.1.1",
+    "ogl": "^1.0.11",
+    "postprocessing": "^6.38.2",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-icons": "^5.5.0",
+    "rough-notation": "^0.5.1",
+    "tailwind-merge": "^3.4.0",
+    "three": "^0.167.1",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1",
+    "tailwindcss": "^4",
+
+I’ll do this in **two steps**, as you asked:
+
+---
+
+# 1️⃣ What the **right-side** should represent (Circles.co omnichannel demo)
+
+### Mental model for the demo UI
+
+The **left side** already represents:
+
+> **“Circles Telecom App (User-facing events & support)”**
+
+So the **right side** should represent:
+
+> **“Circles.co Omnichannel Intelligence Layer (How Circles sees the user across channels)”**
+
+This contrast is extremely powerful in demos.
+
+---
+
+## ✅ Recommended right-side layout
+
+### Title
+
+**Circles.co – Omnichannel Context View**
+
+### Sections on the right side (top → bottom)
+
+---
+
+### **A. Unified User Context (Read-only, derived)**
+
+Shows *what Circles “knows” about the user after ingesting all channels*.
+
+This demonstrates:
+
+* Identity resolution
+* Cross-channel memory
+* Temporal correctness
+
+Fields:
+
+* Unified User ID
+* Active Mobile Number(s)
+* Current Plan
+* Current Location (derived)
+* Recent Activity Summary
+
+---
+
+### **B. Channel Timeline (Multi-channel events)**
+
+Shows how data arrived from **different channels**.
+
+Channels to demo:
+
+* 📱 App Transaction (SIM / Top-up)
+* 💬 In-App Support Chat
+* 📞 Voice Call (future / optional)
+* 🌐 Web Session (future / optional)
+
+Each entry shows:
+
+* Channel
+* Timestamp
+* Event type
+* Linked conversation / transaction ID
+
+This visually reinforces *omnichannel*.
+
+---
+
+### **C. Active Issues & Sentiment**
+
+Shows what is **currently unresolved**.
+
+Fields:
+
+* Open Issue Type (e.g. International Roaming)
+* Issue Age
+* Sentiment Trend
+* Escalation Risk
+
+This is gold for Circles stakeholders.
+
+---
+
+### **D. Memory Projection (What the AI sees)**
+
+This is optional but very powerful.
+
+A readonly text block:
+
+> “This is the context injected into the AI for the next interaction.”
+
+This makes the system tangible.
+
+---
+
+## Why this right-side works
+
+* It **does not repeat raw input**
+* It shows **derived intelligence**
+* It demonstrates **cross-channel stitching**
+* It makes memory visible without creepiness
+
+---
+
+# 2️⃣ Actual data samples (ready to paste into the UI)
+
+Now let’s design **exact data** for your two input fields.
+
+---
+
+## 🔹 LEFT SIDE — Input Field 1
+
+### **SIM Card / Mobile Transaction (Process JSON)**
+
+```json
+{
+  "event_type": "SIM_TOP_UP",
+  "user_id": "usr_550e8400-e29b-41d4-a716-446655440000",
+  "mobile_number": "+6591234567",
+  "transaction_id": "txn_9f1c2b7e-3c41-4e21-9b71-2d4a6a91f112",
+  "top_up_amount_sgd": 20,
+  "top_up_method": "Credit Card",
+  "transaction_timestamp": "2026-01-14T10:42:00+08:00",
+  "app_channel": "circles_mobile_app",
+  "country": "Singapore",
+  "metadata": {
+    "currency": "SGD",
+    "promo_applied": false,
+    "roaming_pack_active": true
+  }
+}
+```
+
+### What this demonstrates
+
+* Transactional data
+* Non-conversational channel
+* Authoritative business event
+* Identity anchor via mobile number
+
+---
+
+## 🔹 LEFT SIDE — Input Field 2
+
+### **Support Chat Conversation (Free text + metadata)**
+
+### Free text conversation (textarea)
+
+```
+Agent: Hi, welcome to Circles support. How can I help you today?
+User: Hi, my international roaming is not working.
+Agent: Sorry to hear that. Which country are you currently in?
+User: I am in Japan right now.
+Agent: Thanks. Have you already enabled roaming from the app?
+User: Yes, I enabled it yesterday but I still have no signal.
+Agent: Understood. Let me check this for you.
+User: This is really frustrating, I need connectivity urgently.
+```
+
+### Metadata below the textarea
+
+```json
+{
+  "user_id": "usr_550e8400-e29b-41d4-a716-446655440000",
+  "conversation_id": "conv_3a7d91c2-98f4-4a6b-bd91-84a6f20c112b",
+  "channel": "in_app_support_chat",
+  "conversation_start": "2026-01-14T11:05:00+08:00",
+  "conversation_end": "2026-01-14T11:18:00+08:00"
+}
+```
+
+### What this demonstrates
+
+* Unstructured conversational data
+* Emotional signal (“frustrating”)
+* Location change (Japan)
+* Issue type (International Roaming)
+* Channel-specific interaction
+
+---
+
+## 🔹 RIGHT SIDE — Example derived output (read-only)
+
+This is what your demo UI should *show* after backend processing.
+
+### **Unified User Context**
+
+```json
+{
+  "unified_user_id": "usr_550e8400-e29b-41d4-a716-446655440000",
+  "primary_mobile_number": "+6591234567",
+  "current_country": "Japan",
+  "home_market": "Singapore",
+  "active_plan": "Circles One",
+  "roaming_enabled": true,
+  "last_transaction": {
+    "type": "SIM_TOP_UP",
+    "amount_sgd": 20,
+    "timestamp": "2026-01-14T10:42:00+08:00"
+  }
+}
+```
+
+---
+
+### **Channel Timeline**
+
+```json
+[
+  {
+    "channel": "Mobile App",
+    "event": "SIM Top-Up",
+    "reference_id": "txn_9f1c2b7e-3c41-4e21-9b71-2d4a6a91f112",
+    "timestamp": "2026-01-14T10:42:00+08:00"
+  },
+  {
+    "channel": "In-App Support Chat",
+    "event": "Roaming Issue Raised",
+    "reference_id": "conv_3a7d91c2-98f4-4a6b-bd91-84a6f20c112b",
+    "timestamp": "2026-01-14T11:05:00+08:00"
+  }
+]
+```
+
+---
+
+### **Active Issues & Sentiment**
+
+```json
+{
+  "open_issue": "International Roaming Not Connecting",
+  "issue_age_minutes": 13,
+  "sentiment": "Negative",
+  "frustration_level": "High",
+  "escalation_risk": "Medium"
+}
+```
+
+---
+
+### **AI Memory Projection (Optional, powerful)**
+
+```
+User is currently in Japan and has an active roaming pack.
+They recently topped up their SIM card.
+They are experiencing an unresolved international roaming issue and are frustrated.
+Respond concisely and prioritize resolution.
+```
+
+---
+
+# Why this demo UI will land well
+
+* Clean separation of **raw input vs derived intelligence**
+* Clear omnichannel story
+* Extremely intuitive for non-technical stakeholders
+* Very easy to extend with Voice / Web later
+* Shows *why* memory matters, not just *that* it exists
+
+Perfect — now we’re anchoring the **UI to Graphiti as the source of truth**, not just “memory vibes”. I’ll do this in **three crisp parts**:
+
+1. **How the UI should look when Graphiti is the authority**
+2. **Rewritten UI description (left vs right, Graphiti-aware)**
+3. **Reworked data samples (what goes into Graphiti, what comes out)**
+
+I’ll be very explicit about **what is fact vs episode vs derived**, because that’s what most demos get wrong.
+
+---
+
+# 1️⃣ How this UI should look *with Graphiti in mind*
+
+When Graphiti is in the picture, the UI **must visually teach one idea**:
+
+> **Raw omnichannel inputs → Temporal facts → Current truth**
+
+So the UI must **separate ingestion from state**.
+
+### ❌ What we must avoid
+
+* Showing Mem0 outputs as “facts”
+* Showing vector memory as “current”
+* Showing chat transcripts as authoritative
+
+### ✅ What we must show
+
+* “This is what was said”
+* “This is what became true”
+* “This is what is true *now*”
+
+That’s the Graphiti story.
+
+---
+
+# 2️⃣ Revised UI description (Graphiti-first)
+
+## Overall layout (still vertical split)
+
+### Left: **Circles Telecom App (Omnichannel Ingestion)**
+
+> *What events and conversations happened*
+
+### Right: **Circles.co – Graphiti Context Engine**
+
+> *What Circles now knows to be true*
+
+This wording matters. Stakeholders immediately understand authority.
+
+---
+
+## LEFT SIDE (unchanged structure, clarified meaning)
+
+### 🔹 Title
+
+**Circles Telecom App – User Activity & Support Channels**
+
+---
+
+### 🔹 Section A: Business Event (Authoritative Signal)
+
+#### Label
+
+**Mobile Network Event (Structured / Deterministic)**
+
+> “This is a factual system event. It may directly update user state.”
+
+#### Input 1: Process JSON (SIM / Network / Billing)
+
+```json
+{
+  "event_type": "SIM_TOP_UP",
+  "user_id": "usr_550e8400-e29b-41d4-a716-446655440000",
+  "msisdn": "+6591234567",
+  "transaction_id": "txn_9f1c2b7e-3c41-4e21-9b71-2d4a6a91f112",
+  "amount": 20,
+  "currency": "SGD",
+  "timestamp": "2026-01-14T10:42:00+08:00",
+  "source_system": "circles_bss",
+  "network_flags": {
+    "roaming_pack_active": true
+  }
+}
+```
+
+**Graphiti implication**
+➡️ This may update **billing state** but **does NOT create user facts** like “location”.
+
+---
+
+### 🔹 Section B: Support Conversation (Unstructured / Episodic)
+
+#### Label
+
+**Customer Support Interaction (Conversational / Interpretive)**
+
+> “This is what the user said. Facts must be inferred and validated.”
+
+#### Input 2: Free-text chat transcript
+
+```
+Agent: Hi, welcome to Circles support. How can I help?
+User: My international roaming is not working.
+Agent: Which country are you currently in?
+User: I am in Japan.
+Agent: Have you enabled roaming?
+User: Yes, since yesterday. Still no signal.
+User: This is really frustrating.
+```
+
+#### Metadata (below textarea)
+
+```json
+{
+  "user_id": "usr_550e8400-e29b-41d4-a716-446655440000",
+  "conversation_id": "conv_3a7d91c2-98f4-4a6b-bd91-84a6f20c112b",
+  "channel": "in_app_support_chat",
+  "started_at": "2026-01-14T11:05:00+08:00",
+  "ended_at": "2026-01-14T11:18:00+08:00"
+}
+```
+
+**Graphiti implication**
+➡️ This creates:
+
+* episodic records
+* candidate facts
+* emotional signals
+  but **no truth yet**.
+
+---
+
+# 3️⃣ RIGHT SIDE – Graphiti-aware view (this is the key rewrite)
+
+## 🔹 Title
+
+**Circles.co – Graphiti Temporal Context (Authoritative View)**
+
+Subtitle:
+
+> “Current user state after resolving all channels and history”
+
+---
+
+## 🔹 Section 1: Current Authoritative User State (Graph Snapshot)
+
+This section **only shows facts with a `valid_to = null` edge**.
+
+### Label
+
+**Current State (as of now)**
+
+```json
+{
+  "user_id": "usr_550e8400-e29b-41d4-a716-446655440000",
+  "home_market": "Singapore",
+  "current_country": "Japan",
+  "active_msisdn": "+6591234567",
+  "roaming_status": "Enabled",
+  "open_support_issue": "International Roaming Not Connecting"
+}
+```
+
+📌 UI detail:
+
+* Small badge: `SOURCE: Graphiti`
+* Timestamp: `resolved_at: 2026-01-14T11:20`
+
+This subtly teaches **authority**.
+
+---
+
+## 🔹 Section 2: Temporal Fact History (Why this is true)
+
+This section demonstrates **Graphiti’s real power**.
+
+### Label
+
+**Temporal History (Resolved Facts)**
+
+```json
+[
+  {
+    "fact": "USER_IN_COUNTRY",
+    "value": "Japan",
+    "valid_from": "2026-01-14T11:06:00+08:00",
+    "derived_from": "support_chat"
+  }
+]
+```
+
+UI hint:
+
+> “Older facts are retained but not active.”
+
+This shows **bi-temporal reasoning without jargon**.
+
+---
+
+## 🔹 Section 3: Episodic Signals (Not Truth)
+
+This is where Mem0/vector memory is **demoted properly**.
+
+### Label
+
+**Recent Episodes & Signals (Non-authoritative)**
+
+```json
+[
+  {
+    "type": "support_episode",
+    "summary": "User reported roaming not working while in Japan",
+    "conversation_id": "conv_3a7d91c2-98f4-4a6b-bd91-84a6f20c112b",
+    "importance": "high"
+  },
+  {
+    "type": "sentiment_signal",
+    "signal": "Frustration detected",
+    "confidence": 0.81
+  }
+]
+```
+
+UI hint:
+
+> “Used to inform tone and prioritization.”
+
+This prevents misinterpretation.
+
+---
+
+## 🔹 Section 4: AI Context Projection (What the bot sees)
+
+This is the **money shot** for demos.
+
+### Label
+
+**Injected AI Context (Read-only)**
+
+```
+User is currently in Japan with roaming enabled.
+They recently topped up their SIM card.
+There is an unresolved roaming connectivity issue.
+User sentiment indicates frustration.
+Respond concisely and focus on resolution.
+```
+
+📌 Important:
+
+* This is **derived**
+* This is **not stored**
+* This is **recomputed per interaction**
+
+---
+
+# 4️⃣ Why this revised UI is Graphiti-correct
+
+### It makes these invariants visible:
+
+| Principle              | Shown in UI             |
+| ---------------------- | ----------------------- |
+| Single source of truth | “Current State” section |
+| Temporal resolution    | History section         |
+| Mem0 ≠ truth           | Episodic signals        |
+| Omnichannel stitching  | Channel-derived facts   |
+| Voice safety           | Precomputed context     |
+
+---
+
+# 5️⃣ What this fixes vs the previous version
+
+### Before
+
+* Looked like “smart memory”
+* Risked dual truth
+* Mem0 felt authoritative
+
+### Now
+
+* Graphiti is visibly authoritative
+* Memory vs fact is obvious
+* Stakeholders *see* why Graphiti exists
+
+---
+
+## Final verdict
+
+This revised UI:
+
+* Correctly reflects Graphiti semantics
+* Teaches omnichannel resolution visually
+* Avoids every common demo mistake
+* Is exactly how I’d demo this to a telco CTO
+
+
