@@ -31,23 +31,23 @@ interface GraphCanvasWrapperProps {
   onCanvasClick: () => void;
 }
 
-// Stunning loading component with pulsing glow
+// Loading component matching UI theme
 function GraphLoading() {
   return (
-    <div className="h-full flex items-center justify-center bg-[#030308]">
+    <div className="h-full flex items-center justify-center bg-[#0a0a0f]">
       <div className="flex flex-col items-center gap-4">
-        {/* Animated orb with glow */}
         <div className="relative">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 via-cyan-400 to-pink-500 animate-spin-slow"
-               style={{
-                 boxShadow: '0 0 40px rgba(168, 85, 247, 0.6), 0 0 80px rgba(34, 211, 238, 0.3)',
-                 animation: 'spin 3s linear infinite'
-               }}
+          <div
+            className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-400"
+            style={{
+              boxShadow: '0 0 30px rgba(99, 102, 241, 0.5)',
+              animation: 'spin 2s linear infinite'
+            }}
           />
-          <div className="absolute inset-0 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/50 to-cyan-400/50 blur-xl animate-pulse" />
+          <div className="absolute inset-0 w-10 h-10 rounded-full bg-indigo-500/30 blur-xl animate-pulse" />
         </div>
-        <span className="text-sm text-white/60 font-light tracking-wide">
-          Initializing neural graph...
+        <span className="text-sm text-white/50 font-light">
+          Loading graph...
         </span>
       </div>
     </div>
@@ -63,82 +63,67 @@ const GraphCanvas = dynamic(
   }
 );
 
-// Stunning cyber/neon theme configuration
-const createCyberTheme = () => ({
+// Graphiti theme configuration - matches the app's design system
+const createGraphitiTheme = () => ({
   canvas: {
-    background: '#030308', // Near-black with slight blue tint
-    fog: '#030308',
+    background: '#0a0a0f', // Matches --background
+    fog: '#0a0a0f',
   },
   node: {
-    fill: '#A855F7',
-    activeFill: '#D8B4FE',
+    fill: '#6366F1', // --graphiti-node
+    activeFill: '#818CF8',
     opacity: 1,
     selectedOpacity: 1,
-    inactiveOpacity: 0.4,
+    inactiveOpacity: 0.5,
     label: {
-      color: '#F8FAFC',
-      stroke: 'transparent',
-      strokeWidth: 0,
+      color: '#E2E8F0',
+      stroke: '#0a0a0f',
+      strokeWidth: 2,
       activeColor: '#FFFFFF',
-      backgroundColor: 'rgba(15, 23, 42, 0.9)',
-      backgroundOpacity: 0.95,
-      padding: 10,
-      strokeColor: 'rgba(168, 85, 247, 0.5)',
-      radius: 6,
-    },
-    subLabel: {
-      color: '#94A3B8',
-      stroke: 'transparent',
-      activeColor: '#CBD5E1',
+      fontSize: 12,
     },
   },
   ring: {
-    fill: '#A855F7',
-    activeFill: '#D8B4FE',
+    fill: '#6366F1',
+    activeFill: '#A5B4FC',
   },
   edge: {
-    fill: '#475569',
-    activeFill: '#22D3EE',
-    opacity: 0.5,
+    fill: '#A5B4FC', // --graphiti-edge
+    activeFill: '#C7D2FE',
+    opacity: 0.6,
     selectedOpacity: 1,
-    inactiveOpacity: 0.15,
+    inactiveOpacity: 0.3,
     label: {
       color: '#94A3B8',
-      stroke: 'transparent',
-      activeColor: '#E2E8F0',
-      fontSize: 11,
-    },
-    subLabel: {
-      color: '#64748B',
-      stroke: 'transparent',
-      activeColor: '#94A3B8',
-      fontSize: 9,
+      stroke: '#0a0a0f',
+      strokeWidth: 2,
+      activeColor: '#CBD5E1',
+      fontSize: 10,
     },
   },
   arrow: {
-    fill: '#475569',
-    activeFill: '#22D3EE',
+    fill: '#A5B4FC',
+    activeFill: '#C7D2FE',
   },
   lasso: {
-    background: 'rgba(168, 85, 247, 0.15)',
-    border: '2px solid rgba(168, 85, 247, 0.6)',
+    background: 'rgba(99, 102, 241, 0.15)',
+    border: '2px solid rgba(99, 102, 241, 0.5)',
   },
   cluster: {
     stroke: '#334155',
     fill: '#1E293B',
-    opacity: 0.25,
-    selectedOpacity: 0.5,
-    inactiveOpacity: 0.08,
+    opacity: 0.3,
+    selectedOpacity: 0.6,
+    inactiveOpacity: 0.15,
     label: {
-      stroke: 'transparent',
+      stroke: '#0a0a0f',
       color: '#E2E8F0',
-      fontSize: 16,
-      offset: [0, 25, 0],
+      fontSize: 14,
     },
   },
 });
 
-// Memoized wrapper component with mount guard pattern and enhanced interactions
+// Memoized wrapper component with mount guard pattern
 const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
   nodes,
   edges,
@@ -160,10 +145,9 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
   // Auto-center graph when nodes change
   useEffect(() => {
     if (mounted && graphRef.current && nodes.length > 0) {
-      // Small delay to let the layout settle
       const timer = setTimeout(() => {
         graphRef.current?.centerGraph();
-      }, 500);
+      }, 600);
       return () => clearTimeout(timer);
     }
   }, [mounted, nodes.length]);
@@ -182,7 +166,7 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
     setTimeout(() => setIsInteracting(false), 300);
   }, [onNodeClick]);
 
-  // Handle hover with smooth transitions
+  // Handle hover
   const handleNodePointerOver = useCallback((node: { id: string }) => {
     onNodeHover(node.id);
   }, [onNodeHover]);
@@ -191,8 +175,8 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
     onNodeHover(null);
   }, [onNodeHover]);
 
-  // Create the cyber theme
-  const cyberTheme = createCyberTheme();
+  // Create the graphiti theme
+  const graphitiTheme = createGraphitiTheme();
 
   // Show loading until fully mounted on client
   if (!mounted) {
@@ -201,19 +185,11 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
 
   return (
     <div className="w-full h-full relative overflow-hidden">
-      {/* Ambient glow effect in background */}
+      {/* Subtle ambient glow matching graphiti colors */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(168, 85, 247, 0.08) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Secondary glow for depth */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at 30% 70%, rgba(34, 211, 238, 0.05) 0%, transparent 50%)',
+          background: 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.06) 0%, transparent 60%)',
         }}
       />
 
@@ -222,25 +198,30 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
         ref={graphRef}
         nodes={nodes}
         edges={edges}
-        theme={cyberTheme}
+        theme={graphitiTheme}
         layoutType="forceDirected2d"
         layoutOverrides={{
-          linkDistance: 150,
-          nodeStrength: -800,
-          linkStrength: 0.5,
+          linkDistance: 120,
+          nodeStrength: -600,
+          linkStrength: 0.6,
         }}
         labelType="all"
         edgeLabelPosition="natural"
         edgeInterpolation="curved"
         edgeArrowPosition="end"
         animated={true}
-        defaultNodeSize={12}
-        minNodeSize={8}
-        maxNodeSize={25}
+        defaultNodeSize={10}
+        minNodeSize={6}
+        maxNodeSize={20}
         draggable={true}
         cameraMode="pan"
-        minDistance={50}
-        maxDistance={3000}
+        // Zoom controls - fixed for better 2-finger scroll
+        minDistance={100}
+        maxDistance={2000}
+        minZoom={-5}
+        maxZoom={10}
+        // Use a web font for sharper text rendering
+        labelFontUrl="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2"
         selections={selectedNode ? [selectedNode] : []}
         actives={hoveredNode ? [hoveredNode] : []}
         onNodeClick={handleNodeClick}
@@ -251,19 +232,11 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
 
       {/* Interaction indicator */}
       {isInteracting && (
-        <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 rounded-full border border-purple-500/30 backdrop-blur-sm">
-          <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-          <span className="text-xs text-purple-300">Focusing...</span>
+        <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-indigo-500/20 rounded-full border border-indigo-500/30 backdrop-blur-sm">
+          <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+          <span className="text-xs text-indigo-300">Focusing...</span>
         </div>
       )}
-
-      {/* Subtle vignette overlay for depth */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at center, transparent 50%, rgba(3, 3, 8, 0.4) 100%)',
-        }}
-      />
     </div>
   );
 });

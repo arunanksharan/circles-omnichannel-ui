@@ -7,46 +7,32 @@ import type {
   GraphNodeType,
 } from '@/types/demo';
 
-// Neon/Cyber color palette for stunning visual impact
+// Graphiti-themed color palette - matches app design system
 export const NODE_COLORS: Record<GraphNodeType, string> = {
-  user: '#A855F7',      // Vibrant purple - Central user (protagonist glow)
-  fact: '#22D3EE',      // Neon cyan - Temporal facts
-  pet: '#F472B6',       // Hot pink - Pet
-  relationship: '#C084FC', // Soft purple-pink - Relationships
-  interest: '#60A5FA',  // Electric blue - Interests
-  emotion: '#FBBF24',   // Bright amber - Emotional state
-  goal: '#2DD4BF',      // Teal glow - Goals
-  event: '#FB923C',     // Neon orange - Life events
-  location: '#4ADE80',  // Bright green - Location
-  issue: '#F87171',     // Coral red - Support issues
+  user: '#6366F1',      // Indigo - central user (graphiti-node)
+  fact: '#F59E0B',      // Amber - temporal facts (graphiti-temporal)
+  pet: '#EC4899',       // Pink - pet
+  relationship: '#8B5CF6', // Purple - relationships
+  interest: '#3B82F6',  // Blue - interests
+  emotion: '#EF4444',   // Red - emotional state
+  goal: '#10B981',      // Emerald - goals
+  event: '#F97316',     // Orange - life events
+  location: '#22C55E',  // Green - location
+  issue: '#EF4444',     // Red - support issues
 };
 
-// Glow colors (slightly brighter versions for active states)
-export const NODE_GLOW_COLORS: Record<GraphNodeType, string> = {
-  user: '#D8B4FE',
-  fact: '#67E8F9',
-  pet: '#F9A8D4',
-  relationship: '#E9D5FF',
-  interest: '#93C5FD',
-  emotion: '#FDE047',
-  goal: '#5EEAD4',
-  event: '#FDBA74',
-  location: '#86EFAC',
-  issue: '#FCA5A5',
-};
-
-// Node sizes by type - larger for better visibility
+// Node sizes by type
 export const NODE_SIZES: Record<GraphNodeType, number> = {
-  user: 20,
-  fact: 12,
-  pet: 14,
-  relationship: 13,
-  interest: 11,
-  emotion: 14,
-  goal: 11,
-  event: 11,
-  location: 13,
-  issue: 14,
+  user: 16,
+  fact: 10,
+  pet: 12,
+  relationship: 11,
+  interest: 9,
+  emotion: 12,
+  goal: 9,
+  event: 9,
+  location: 11,
+  issue: 12,
 };
 
 /**
@@ -291,7 +277,7 @@ function getEmotionColor(mood: string): string {
   switch (mood) {
     case 'happy':
     case 'excited':
-      return '#10B981'; // Green
+      return '#22C55E'; // Green
     case 'stressed':
     case 'anxious':
       return '#EF4444'; // Red
