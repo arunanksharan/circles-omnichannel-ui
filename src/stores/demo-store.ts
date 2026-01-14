@@ -10,6 +10,7 @@ import type {
   SentimentSignal,
   DemoMode,
 } from '@/types/demo';
+import { DEMO_PRESETS, PERSONAL_CONTEXT_PRESETS } from '@/mocks/presets';
 
 interface DemoState {
   // Mode
@@ -99,12 +100,10 @@ export const useDemoStore = create<DemoState>((set, get) => ({
 
   setSelectedPreset: (presetId) => set({ selectedPreset: presetId }),
 
-  loadPreset: async (presetId) => {
-    // Import presets dynamically to avoid circular dependencies
-    const { DEMO_PRESETS, PERSONAL_CONTEXT_PRESETS } = await import('@/mocks/presets');
-
+  loadPreset: (presetId) => {
     // Check telecom presets first
     const telecomPreset = DEMO_PRESETS.find((p) => p.id === presetId);
+
     if (telecomPreset) {
       set({
         selectedPreset: presetId,
@@ -123,7 +122,6 @@ export const useDemoStore = create<DemoState>((set, get) => ({
       set({
         selectedPreset: presetId,
         businessEvent: personalPreset.businessEvent,
-        // Personal presets populate the personal context transcript
         conversationTranscript: '', // Clear telecom transcript
         personalContextTranscript: personalPreset.conversationTranscript,
         conversationMetadata: personalPreset.conversationMetadata,
