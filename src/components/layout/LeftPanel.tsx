@@ -13,8 +13,54 @@ import {
 } from '@/components/input';
 import { useAnimationStore } from '@/stores/animation-store';
 import { cn } from '@/lib/utils/cn';
-import { Settings, Zap } from 'lucide-react';
+import { Settings, Zap, Headphones, Heart } from 'lucide-react';
 import type { DemoMode } from '@/types/demo';
+
+// Section Divider Component
+function SectionDivider({
+  icon: Icon,
+  label,
+  color
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  color: 'purple' | 'pink';
+}) {
+  const colorClasses = {
+    purple: {
+      line: 'from-transparent via-purple-500/50 to-transparent',
+      icon: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
+      text: 'text-purple-300',
+    },
+    pink: {
+      line: 'from-transparent via-pink-500/50 to-transparent',
+      icon: 'text-pink-400 bg-pink-500/10 border-pink-500/30',
+      text: 'text-pink-300',
+    },
+  };
+
+  const colors = colorClasses[color];
+
+  return (
+    <div className="relative py-4">
+      {/* Gradient Line */}
+      <div className={cn('absolute inset-x-0 top-1/2 h-px bg-gradient-to-r', colors.line)} />
+
+      {/* Label Badge */}
+      <div className="relative flex justify-center">
+        <div className={cn(
+          'flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur-sm',
+          colors.icon
+        )}>
+          <Icon className="w-3.5 h-3.5" />
+          <span className={cn('text-[10px] font-semibold uppercase tracking-wider', colors.text)}>
+            {label}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function LeftPanel() {
   const {
@@ -61,7 +107,7 @@ export function LeftPanel() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pr-2 space-y-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin">
         {/* Business Event Input */}
         <BusinessEventInput
           value={businessEvent}
@@ -69,26 +115,42 @@ export function LeftPanel() {
         />
 
         {/* ===== TELECOM SECTION ===== */}
-        {/* Demo Preset Selector - Telecom Scenarios */}
-        <PresetSelector selectedPreset={selectedPreset} onSelect={loadPreset} />
-
-        {/* Customer Support Conversation Input */}
-        <ConversationInput
-          transcript={conversationTranscript}
-          metadata={conversationMetadata}
-          onTranscriptChange={setConversationTranscript}
-          onMetadataChange={setConversationMetadata}
+        <SectionDivider
+          icon={Headphones}
+          label="Customer Support"
+          color="purple"
         />
+
+        {/* Demo Preset Selector - Telecom Scenarios */}
+        <div className="space-y-4">
+          <PresetSelector selectedPreset={selectedPreset} onSelect={loadPreset} />
+
+          {/* Customer Support Conversation Input */}
+          <ConversationInput
+            transcript={conversationTranscript}
+            metadata={conversationMetadata}
+            onTranscriptChange={setConversationTranscript}
+            onMetadataChange={setConversationMetadata}
+          />
+        </div>
 
         {/* ===== PERSONAL CONTEXT SECTION ===== */}
-        {/* Personal Context Preset Selector - Avatar/Replika-style memories */}
-        <PersonalContextPresetSelector selectedPreset={selectedPreset} onSelect={loadPreset} />
-
-        {/* Personal Context Conversation Input */}
-        <PersonalContextInput
-          transcript={personalContextTranscript}
-          onTranscriptChange={setPersonalContextTranscript}
+        <SectionDivider
+          icon={Heart}
+          label="Avatar Memory"
+          color="pink"
         />
+
+        {/* Personal Context Preset Selector - Avatar/Replika-style memories */}
+        <div className="space-y-4">
+          <PersonalContextPresetSelector selectedPreset={selectedPreset} onSelect={loadPreset} />
+
+          {/* Personal Context Conversation Input */}
+          <PersonalContextInput
+            transcript={personalContextTranscript}
+            onTranscriptChange={setPersonalContextTranscript}
+          />
+        </div>
       </div>
 
       {/* Footer Actions */}
