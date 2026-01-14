@@ -137,6 +137,55 @@ Agent: Of course. I've confirmed your emergency services are fully active in Jap
 // TELECOM SCENARIO PRESETS
 // ============================================================
 export const DEMO_PRESETS: DemoPreset[] = [
+  // ChitChat Demo User - Synchronized with chitchat-frontend-react devUserId
+  {
+    id: 'chitchat-demo-user',
+    name: 'ChitChat Demo User',
+    description: 'Demo user synchronized with ChitChat frontend for end-to-end testing',
+    businessEvent: {
+      event_type: 'USER_PROFILE_UPDATE',
+      user_id: '000000000000000000000001', // Matches chitchat devUserId
+      msisdn: '+6591234567',
+      transaction_id: 'txn_demo_sync_001',
+      timestamp: '2026-01-15T10:00:00+08:00',
+      amount: 0,
+      currency: 'SGD',
+      source_system: 'omnichannel_demo',
+      metadata: {
+        sync_source: 'omnichannel-ui',
+        demo_mode: true,
+      },
+    },
+    conversationTranscript: `Agent: Welcome to Circles support! How can I help you today?
+User: Hi, I'm testing the system integration between the dashboard and voice assistant.
+Agent: Great! I can see your account. Is there anything specific you'd like me to note for future reference?
+User: Yes, please note that I prefer email communications and I'm interested in the unlimited data plan.
+Agent: Perfect, I've noted your preference for email and interest in unlimited data. Anything else?
+User: Also, I'll be traveling to Japan next month and will need roaming.
+Agent: Noted! I've recorded your upcoming Japan travel. We'll make sure roaming options are ready for you.
+User: One more thing - my cat Whiskers is turning 3 next week, so I might be distracted!
+Agent: How sweet! Happy early birthday to Whiskers. I've noted that too. Is there anything else?
+User: That's all for now. Thank you!`,
+    conversationMetadata: {
+      user_id: '000000000000000000000001', // Matches chitchat devUserId
+      conversation_id: 'conv_demo_sync_001',
+      channel: 'omnichannel_dashboard',
+      started_at: '2026-01-15T10:00:00+08:00',
+      ended_at: '2026-01-15T10:15:00+08:00',
+    },
+    expectedOutcome: {
+      currentCountry: 'Singapore',
+      openIssue: null,
+      sentimentSignal: 'Neutral - Testing',
+      keyFacts: [
+        'Prefers email communication',
+        'Interested in unlimited data plan',
+        'Traveling to Japan next month',
+        'Needs roaming service',
+        'Has a cat named Whiskers (turning 3)',
+      ],
+    },
+  },
   {
     id: 'international-roaming-issue',
     name: 'International Roaming Issue',

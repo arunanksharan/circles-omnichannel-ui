@@ -51,7 +51,8 @@ export async function ingestBusinessEvent(
 }
 
 /**
- * Ingest conversation transcript into the memory service
+ * Ingest conversation transcript directly into Graphiti service
+ * This bypasses memory-service and calls graphiti episodes endpoint directly
  */
 export async function ingestConversation(
   tenantId: string,
@@ -59,22 +60,24 @@ export async function ingestConversation(
   metadata: ConversationMetadata
 ): Promise<{ success: boolean; episode_id?: string }> {
   const response = await fetch(
-    `${MEMORY_SERVICE_URL}/api/v1/memories/conversation`,
+    `${GRAPHITI_SERVICE_URL}/api/v1/graphiti/episodes`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tenant_id: tenantId,
         unified_user_id: metadata.user_id,
+        source_channel: metadata.channel || 'omnichannel_dashboard',
         content: transcript,
-        channel: metadata.channel,
-        conversation_id: metadata.conversation_id,
+        episode_name: `omnichannel_${metadata.conversation_id}`,
+        use_custom_types: true,
       }),
     }
   );
 
   if (!response.ok) {
-    throw new Error(`Failed to ingest conversation: ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`Failed to ingest conversation: ${response.status} ${response.statusText} - ${errorText}`);
   }
 
   return response.json();
@@ -157,22 +160,20 @@ export async function buildContext(
 
 /**
  * Combined ingest and process for demo
+ * Uses tenant 'sg' to match circles-memory-service ALLOWED_TENANTS
  */
 export async function ingestAndProcess(
   params: IngestAndProcessParams
 ): Promise<ProcessResponse> {
-  const tenantId = 'circles-demo';
+  // Must use 'sg' tenant - circles-memory-service only allows: sg,jp,tw,au,mn
+  const tenantId = 'sg';
+  // Default to chitchat demo user ID for end-to-end testing
   const userId =
     params.businessEvent?.user_id ||
     params.conversationMetadata?.user_id ||
-    'usr_demo';
+    '000000000000000000000001';
 
-  // Ingest business event if provided
-  if (params.businessEvent) {
-    await ingestBusinessEvent(tenantId, params.businessEvent);
-  }
-
-  // Ingest conversation if provided
+  // Ingest conversation directly to Graphiti (skip business event for now)
   if (params.conversationTranscript && params.conversationMetadata) {
     await ingestConversation(
       tenantId,
@@ -181,8 +182,8 @@ export async function ingestAndProcess(
     );
   }
 
-  // Small delay to allow processing
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // Wait for Graphiti LLM processing (entity extraction takes 1-2 seconds)
+  await new Promise((resolve) => setTimeout(resolve, 2500));
 
   // Get updated state
   const [currentState, temporalFacts, contextResponse] = await Promise.all([
