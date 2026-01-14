@@ -8,6 +8,7 @@ import {
   EpisodicSignalsCard,
   AIContextProjection,
 } from '@/components/output';
+import { KnowledgeGraph } from '@/components/graph';
 import { useAnimationStore } from '@/stores/animation-store';
 import { cn } from '@/lib/utils/cn';
 import { Database, Sparkles } from 'lucide-react';
@@ -64,6 +65,13 @@ export function RightPanel() {
           state={currentGraphitiState}
           isLoading={isProcessing}
           lastUpdated={lastSubmitTime}
+        />
+
+        {/* Knowledge Graph Visualization */}
+        <KnowledgeGraph
+          state={currentGraphitiState}
+          facts={temporalFacts}
+          isLoading={isProcessing}
         />
 
         {/* Temporal History Timeline */}

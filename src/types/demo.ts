@@ -160,3 +160,41 @@ export interface ProcessingStep {
   status: 'pending' | 'active' | 'completed' | 'error';
   duration?: number;
 }
+
+// ============================================================
+// KNOWLEDGE GRAPH TYPES (for visualization)
+// ============================================================
+
+export type GraphNodeType =
+  | 'user'
+  | 'fact'
+  | 'pet'
+  | 'relationship'
+  | 'interest'
+  | 'emotion'
+  | 'goal'
+  | 'event'
+  | 'location'
+  | 'issue';
+
+export interface KnowledgeGraphNode {
+  id: string;
+  label: string;
+  type: GraphNodeType;
+  data?: Record<string, unknown>;
+  fill?: string;
+  size?: number;
+}
+
+export interface KnowledgeGraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+  type?: string;
+}
+
+export interface KnowledgeGraphData {
+  nodes: KnowledgeGraphNode[];
+  edges: KnowledgeGraphEdge[];
+}
