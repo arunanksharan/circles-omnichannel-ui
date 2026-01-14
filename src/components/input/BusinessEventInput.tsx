@@ -13,12 +13,13 @@ interface BusinessEventInputProps {
   onChange: (event: BusinessEvent | null) => void;
 }
 
+// Static placeholder to avoid hydration mismatch (no Date.now() or dynamic values)
 const PLACEHOLDER_EVENT = `{
   "event_type": "SIM_TOP_UP",
   "user_id": "usr_550e8400-e29b-41d4-a716-446655440000",
   "msisdn": "+6591234567",
   "transaction_id": "txn_example",
-  "timestamp": "${new Date().toISOString()}",
+  "timestamp": "2025-01-15T00:00:00.000Z",
   "amount": 20,
   "currency": "SGD",
   "source_system": "circles_bss",

@@ -20,12 +20,13 @@ User: My international roaming is not working.
 Agent: Which country are you currently in?
 User: I am in Japan.`;
 
+// Static placeholder to avoid hydration mismatch (no Date.now() or dynamic values)
 const PLACEHOLDER_METADATA = `{
   "user_id": "usr_550e8400-e29b-41d4-a716-446655440000",
   "conversation_id": "conv_example",
   "channel": "in_app_support_chat",
-  "started_at": "${new Date().toISOString()}",
-  "ended_at": "${new Date().toISOString()}"
+  "started_at": "2025-01-15T00:00:00.000Z",
+  "ended_at": "2025-01-15T00:05:00.000Z"
 }`;
 
 export function ConversationInput({

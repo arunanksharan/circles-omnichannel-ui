@@ -1,18 +1,14 @@
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
-import { GraphCanvas, type Theme, type GraphCanvasRef } from 'reagraph';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { cn } from '@/lib/utils/cn';
 import { transformToGraphData, NODE_COLORS } from '@/lib/utils/graph-transform';
 import type { GraphitiCurrentState, TemporalFact, GraphNodeType } from '@/types/demo';
 import {
   Network,
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
   Info,
   X,
   User,
@@ -24,8 +20,38 @@ import {
   Target,
   Calendar,
   Database,
+  ZoomIn,
+  Move,
+  MousePointer2,
 } from 'lucide-react';
 import React from 'react';
+
+// Dynamic import the wrapper with SSR disabled to avoid R3F context issues
+const GraphCanvasWrapper = dynamic(
+  () => import('./GraphCanvasWrapper'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full flex items-center justify-center bg-[#030308]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div
+              className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 via-cyan-400 to-pink-500"
+              style={{
+                boxShadow: '0 0 40px rgba(168, 85, 247, 0.6), 0 0 80px rgba(34, 211, 238, 0.3)',
+                animation: 'spin 3s linear infinite'
+              }}
+            />
+            <div className="absolute inset-0 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/50 to-cyan-400/50 blur-xl animate-pulse" />
+          </div>
+          <span className="text-sm text-white/60 font-light tracking-wide">
+            Initializing neural graph...
+          </span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 interface KnowledgeGraphProps {
   state: GraphitiCurrentState | null;
@@ -33,67 +59,7 @@ interface KnowledgeGraphProps {
   isLoading: boolean;
 }
 
-// Custom dark theme matching our UI
-const graphitiTheme: Theme = {
-  canvas: {
-    background: 'transparent',
-    fog: 'transparent',
-  },
-  node: {
-    fill: '#8B5CF6',
-    activeFill: '#A78BFA',
-    opacity: 1,
-    selectedOpacity: 1,
-    inactiveOpacity: 0.3,
-    label: {
-      color: '#F3F4F6',
-      stroke: '#000000',
-      activeColor: '#FFFFFF',
-    },
-    subLabel: {
-      color: '#9CA3AF',
-      stroke: '#000000',
-      activeColor: '#D1D5DB',
-    },
-  },
-  ring: {
-    fill: '#8B5CF6',
-    activeFill: '#A78BFA',
-  },
-  edge: {
-    fill: '#4B5563',
-    activeFill: '#8B5CF6',
-    opacity: 0.6,
-    selectedOpacity: 1,
-    inactiveOpacity: 0.15,
-    label: {
-      color: '#9CA3AF',
-      stroke: '#000000',
-      activeColor: '#F3F4F6',
-    },
-  },
-  arrow: {
-    fill: '#4B5563',
-    activeFill: '#8B5CF6',
-  },
-  lasso: {
-    background: 'rgba(139, 92, 246, 0.1)',
-    border: '2px solid #8B5CF6',
-  },
-  cluster: {
-    stroke: '#4B5563',
-    fill: '#1F2937',
-    opacity: 0.3,
-    selectedOpacity: 0.5,
-    inactiveOpacity: 0.1,
-    label: {
-      stroke: '#000000',
-      color: '#F3F4F6',
-    },
-  },
-};
-
-// Node type icons
+// Node type icons with consistent styling
 const nodeTypeIcons: Record<GraphNodeType, React.ComponentType<{ className?: string }>> = {
   user: User,
   location: MapPin,
@@ -108,7 +74,6 @@ const nodeTypeIcons: Record<GraphNodeType, React.ComponentType<{ className?: str
 };
 
 export function KnowledgeGraph({ state, facts, isLoading }: KnowledgeGraphProps) {
-  const graphRef = React.useRef<GraphCanvasRef>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
@@ -137,19 +102,6 @@ export function KnowledgeGraph({ state, facts, isLoading }: KnowledgeGraphProps)
     }));
   }, [graphData.edges]);
 
-  // Zoom controls
-  const handleZoomIn = useCallback(() => {
-    graphRef.current?.zoomIn?.();
-  }, []);
-
-  const handleZoomOut = useCallback(() => {
-    graphRef.current?.zoomOut?.();
-  }, []);
-
-  const handleFitView = useCallback(() => {
-    graphRef.current?.fitNodesInView?.();
-  }, []);
-
   // Get node details for tooltip
   const getSelectedNodeDetails = useCallback(() => {
     if (!selectedNode) return null;
@@ -160,19 +112,37 @@ export function KnowledgeGraph({ state, facts, isLoading }: KnowledgeGraphProps)
 
   const selectedNodeDetails = getSelectedNodeDetails();
 
+  // Handlers for graph interactions
+  const handleNodeClick = useCallback((nodeId: string) => {
+    setSelectedNode(nodeId === selectedNode ? null : nodeId);
+  }, [selectedNode]);
+
+  const handleNodeHover = useCallback((nodeId: string | null) => {
+    setHoveredNode(nodeId);
+  }, []);
+
+  const handleCanvasClick = useCallback(() => {
+    setSelectedNode(null);
+  }, []);
+
   return (
     <Card id="knowledge-graph" variant="glass">
       <CardHeader
-        badge={<Badge variant="graphiti">GRAPH VIEW</Badge>}
+        badge={<Badge variant="graphiti">NEURAL GRAPH</Badge>}
       >
         <div className="flex items-center gap-2">
-          <Network className="w-4 h-4 text-purple-400" />
-          Knowledge Graph
+          <div className="relative">
+            <Network className="w-4 h-4 text-purple-400" />
+            <div className="absolute inset-0 w-4 h-4 bg-purple-400/30 blur-sm rounded-full" />
+          </div>
+          <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+            Knowledge Graph
+          </span>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-xs text-white/70 mb-3">
-          Visual representation of entities and relationships in Graphiti
+        <p className="text-xs text-white/50 mb-3 font-light">
+          Interactive visualization of entities and relationships
         </p>
 
         <AnimatePresence mode="wait">
@@ -182,11 +152,22 @@ export function KnowledgeGraph({ state, facts, isLoading }: KnowledgeGraphProps)
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-[400px] flex items-center justify-center"
+              className="h-[450px] flex items-center justify-center bg-[#030308] rounded-xl"
             >
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm text-white/50">Building graph...</span>
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                  <div
+                    className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 via-cyan-400 to-pink-500"
+                    style={{
+                      boxShadow: '0 0 50px rgba(168, 85, 247, 0.6), 0 0 100px rgba(34, 211, 238, 0.3)',
+                      animation: 'spin 3s linear infinite'
+                    }}
+                  />
+                  <div className="absolute inset-0 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500/50 to-cyan-400/50 blur-xl animate-pulse" />
+                </div>
+                <span className="text-sm text-white/50 font-light tracking-wide">
+                  Constructing neural pathways...
+                </span>
               </div>
             </motion.div>
           ) : nodes.length === 0 ? (
@@ -195,125 +176,137 @@ export function KnowledgeGraph({ state, facts, isLoading }: KnowledgeGraphProps)
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-[400px] flex items-center justify-center text-center"
+              className="h-[450px] flex items-center justify-center text-center bg-[#030308] rounded-xl border border-white/5"
             >
-              <div className="flex flex-col items-center gap-2 text-white/30">
-                <Network className="w-12 h-12 opacity-50" />
-                <p className="text-sm">No graph data yet</p>
-                <p className="text-xs">Submit data to visualize the knowledge graph</p>
+              <div className="flex flex-col items-center gap-3 text-white/30">
+                <div className="relative">
+                  <Network className="w-16 h-16 opacity-30" />
+                  <div className="absolute inset-0 w-16 h-16 bg-purple-500/10 blur-2xl rounded-full" />
+                </div>
+                <p className="text-sm font-light">No graph data yet</p>
+                <p className="text-xs text-white/20">Process data to visualize the knowledge graph</p>
               </div>
             </motion.div>
           ) : (
             <motion.div
               key="graph"
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
               className="relative"
             >
-              {/* Graph Container */}
-              <div className="h-[400px] bg-black/30 rounded-lg border border-white/10 overflow-hidden">
-                <GraphCanvas
-                  ref={graphRef}
-                  nodes={nodes}
-                  edges={edges}
-                  theme={graphitiTheme}
-                  layoutType="forceDirected2d"
-                  layoutOverrides={{
-                    linkDistance: 100,
-                    nodeStrength: -500,
-                  }}
-                  labelType="auto"
-                  edgeLabelPosition="natural"
-                  edgeInterpolation="curved"
-                  edgeArrowPosition="end"
-                  animated={true}
-                  defaultNodeSize={8}
-                  minNodeSize={5}
-                  maxNodeSize={20}
-                  draggable={true}
-                  cameraMode="pan"
-                  selections={selectedNode ? [selectedNode] : []}
-                  actives={hoveredNode ? [hoveredNode] : []}
-                  onNodeClick={(node) => {
-                    setSelectedNode(node.id === selectedNode ? null : node.id);
-                  }}
-                  onNodePointerOver={(node) => {
-                    setHoveredNode(node.id);
-                  }}
-                  onNodePointerOut={() => {
-                    setHoveredNode(null);
-                  }}
-                  onCanvasClick={() => {
-                    setSelectedNode(null);
+              {/* Graph Container with stunning border */}
+              <div
+                className="h-[450px] rounded-xl overflow-hidden relative"
+                style={{
+                  background: '#030308',
+                  border: '1px solid rgba(168, 85, 247, 0.2)',
+                  boxShadow: '0 0 40px rgba(168, 85, 247, 0.05), inset 0 0 60px rgba(0, 0, 0, 0.5)',
+                }}
+              >
+                {/* Gradient border glow */}
+                <div
+                  className="absolute inset-0 pointer-events-none rounded-xl"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, transparent 50%, rgba(34, 211, 238, 0.1) 100%)',
                   }}
                 />
+
+                <GraphCanvasWrapper
+                  nodes={nodes}
+                  edges={edges}
+                  theme={{}}
+                  selectedNode={selectedNode}
+                  hoveredNode={hoveredNode}
+                  onNodeClick={handleNodeClick}
+                  onNodeHover={handleNodeHover}
+                  onCanvasClick={handleCanvasClick}
+                />
+
+                {/* Controls hint */}
+                <div className="absolute bottom-3 left-3 flex items-center gap-3 text-[10px] text-white/30">
+                  <div className="flex items-center gap-1">
+                    <MousePointer2 className="w-3 h-3" />
+                    <span>Click to select</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Move className="w-3 h-3" />
+                    <span>Drag to pan</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ZoomIn className="w-3 h-3" />
+                    <span>Scroll to zoom</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Graph Controls */}
-              <div className="absolute top-3 right-3 flex flex-col gap-1">
-                <button
-                  onClick={handleZoomIn}
-                  className="p-2 bg-black/50 hover:bg-black/70 border border-white/10 rounded-lg transition-colors"
-                  title="Zoom In"
-                >
-                  <ZoomIn className="w-4 h-4 text-white/70" />
-                </button>
-                <button
-                  onClick={handleZoomOut}
-                  className="p-2 bg-black/50 hover:bg-black/70 border border-white/10 rounded-lg transition-colors"
-                  title="Zoom Out"
-                >
-                  <ZoomOut className="w-4 h-4 text-white/70" />
-                </button>
-                <button
-                  onClick={handleFitView}
-                  className="p-2 bg-black/50 hover:bg-black/70 border border-white/10 rounded-lg transition-colors"
-                  title="Fit View"
-                >
-                  <Maximize2 className="w-4 h-4 text-white/70" />
-                </button>
-              </div>
-
-              {/* Node Details Panel */}
+              {/* Node Details Panel - Stunning glassmorphism */}
               <AnimatePresence>
                 {selectedNodeDetails && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute bottom-3 left-3 right-3 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg p-3"
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="absolute bottom-16 left-3 right-3 z-20"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: selectedNodeDetails.fill }}
-                        />
-                        <span className="text-sm font-medium text-white">
-                          {selectedNodeDetails.label}
-                        </span>
-                        <span className="text-xs text-white/50 uppercase">
-                          {selectedNodeDetails.type}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setSelectedNode(null)}
-                        className="p-1 hover:bg-white/10 rounded transition-colors"
-                      >
-                        <X className="w-3 h-3 text-white/50" />
-                      </button>
-                    </div>
-                    {selectedNodeDetails.data && Object.keys(selectedNodeDetails.data).length > 0 && (
-                      <div className="mt-2 text-xs text-white/60 space-y-1">
-                        {Object.entries(selectedNodeDetails.data).map(([key, value]) => (
-                          <div key={key} className="flex gap-2">
-                            <span className="text-white/40">{key}:</span>
-                            <span>{String(value)}</span>
+                    <div
+                      className="rounded-xl p-4 backdrop-blur-xl"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)',
+                        border: '1px solid rgba(168, 85, 247, 0.3)',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(168, 85, 247, 0.1)',
+                      }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          {/* Glowing node indicator */}
+                          <div className="relative">
+                            <div
+                              className="w-4 h-4 rounded-full"
+                              style={{
+                                backgroundColor: selectedNodeDetails.fill,
+                                boxShadow: `0 0 12px ${selectedNodeDetails.fill}80`,
+                              }}
+                            />
+                            <div
+                              className="absolute inset-0 w-4 h-4 rounded-full animate-ping"
+                              style={{
+                                backgroundColor: selectedNodeDetails.fill,
+                                opacity: 0.3,
+                              }}
+                            />
                           </div>
-                        ))}
+                          <div>
+                            <span className="text-sm font-medium text-white block">
+                              {selectedNodeDetails.label}
+                            </span>
+                            <span className="text-[10px] text-white/40 uppercase tracking-wider">
+                              {selectedNodeDetails.type}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setSelectedNode(null)}
+                          className="p-1.5 hover:bg-white/10 rounded-lg transition-all duration-200 hover:scale-110"
+                        >
+                          <X className="w-4 h-4 text-white/40 hover:text-white/80" />
+                        </button>
                       </div>
-                    )}
+                      {selectedNodeDetails.data && Object.keys(selectedNodeDetails.data).length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            {Object.entries(selectedNodeDetails.data).map(([key, value]) => (
+                              <div key={key} className="flex flex-col gap-0.5">
+                                <span className="text-white/30 text-[10px] uppercase tracking-wider">{key}</span>
+                                <span className="text-white/70">{String(value)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -321,12 +314,17 @@ export function KnowledgeGraph({ state, facts, isLoading }: KnowledgeGraphProps)
           )}
         </AnimatePresence>
 
-        {/* Legend */}
+        {/* Legend - Stunning with glow effects */}
         {nodes.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/10">
-            <div className="flex items-center gap-1 mb-2">
-              <Info className="w-3 h-3 text-white/40" />
-              <span className="text-[10px] text-white/40 uppercase tracking-wider">Legend</span>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-4 pt-4 border-t border-white/5"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Info className="w-3 h-3 text-purple-400/60" />
+              <span className="text-[10px] text-white/40 uppercase tracking-widest font-medium">Entity Types</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {Object.entries(NODE_COLORS).map(([type, color]) => {
@@ -334,21 +332,31 @@ export function KnowledgeGraph({ state, facts, isLoading }: KnowledgeGraphProps)
                 if (!hasType) return null;
                 const Icon = nodeTypeIcons[type as GraphNodeType];
                 return (
-                  <div
+                  <motion.div
                     key={type}
-                    className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded text-[10px]"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileHover={{ scale: 1.05 }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] cursor-default transition-all duration-200"
+                    style={{
+                      background: `linear-gradient(135deg, ${color}15 0%, ${color}08 100%)`,
+                      border: `1px solid ${color}30`,
+                    }}
                   >
                     <div
                       className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: color }}
+                      style={{
+                        backgroundColor: color,
+                        boxShadow: `0 0 8px ${color}60`,
+                      }}
                     />
-                    <Icon className="w-3 h-3 text-white/50" />
-                    <span className="text-white/60 capitalize">{type}</span>
-                  </div>
+                    <Icon className="w-3 h-3" style={{ color: `${color}` }} />
+                    <span className="text-white/70 capitalize font-medium">{type}</span>
+                  </motion.div>
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         )}
       </CardContent>
     </Card>

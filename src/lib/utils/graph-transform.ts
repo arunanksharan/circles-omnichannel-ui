@@ -7,32 +7,46 @@ import type {
   GraphNodeType,
 } from '@/types/demo';
 
-// Color palette for different node types
+// Neon/Cyber color palette for stunning visual impact
 export const NODE_COLORS: Record<GraphNodeType, string> = {
-  user: '#8B5CF6',      // Purple - Central user
-  fact: '#10B981',      // Green - Temporal facts
-  pet: '#EC4899',       // Pink - Pet
-  relationship: '#A855F7', // Purple-pink - Relationships
-  interest: '#3B82F6',  // Blue - Interests
-  emotion: '#F59E0B',   // Amber - Emotional state
-  goal: '#06B6D4',      // Cyan - Goals
-  event: '#F97316',     // Orange - Life events
-  location: '#84CC16',  // Lime - Location
-  issue: '#EF4444',     // Red - Support issues
+  user: '#A855F7',      // Vibrant purple - Central user (protagonist glow)
+  fact: '#22D3EE',      // Neon cyan - Temporal facts
+  pet: '#F472B6',       // Hot pink - Pet
+  relationship: '#C084FC', // Soft purple-pink - Relationships
+  interest: '#60A5FA',  // Electric blue - Interests
+  emotion: '#FBBF24',   // Bright amber - Emotional state
+  goal: '#2DD4BF',      // Teal glow - Goals
+  event: '#FB923C',     // Neon orange - Life events
+  location: '#4ADE80',  // Bright green - Location
+  issue: '#F87171',     // Coral red - Support issues
 };
 
-// Node sizes by type
+// Glow colors (slightly brighter versions for active states)
+export const NODE_GLOW_COLORS: Record<GraphNodeType, string> = {
+  user: '#D8B4FE',
+  fact: '#67E8F9',
+  pet: '#F9A8D4',
+  relationship: '#E9D5FF',
+  interest: '#93C5FD',
+  emotion: '#FDE047',
+  goal: '#5EEAD4',
+  event: '#FDBA74',
+  location: '#86EFAC',
+  issue: '#FCA5A5',
+};
+
+// Node sizes by type - larger for better visibility
 export const NODE_SIZES: Record<GraphNodeType, number> = {
-  user: 15,
-  fact: 8,
-  pet: 10,
-  relationship: 9,
-  interest: 8,
-  emotion: 10,
-  goal: 8,
-  event: 8,
-  location: 9,
-  issue: 10,
+  user: 20,
+  fact: 12,
+  pet: 14,
+  relationship: 13,
+  interest: 11,
+  emotion: 14,
+  goal: 11,
+  event: 11,
+  location: 13,
+  issue: 14,
 };
 
 /**

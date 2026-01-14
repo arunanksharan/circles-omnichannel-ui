@@ -34,7 +34,7 @@
     "reagraph": "^4.30.7",
     "rough-notation": "^0.5.1",
     "tailwind-merge": "^3.4.0",
-    "three": "^0.167.1",
+    "three": "^0.182.0",
     "zustand": "^5.0.10"
   },
   "devDependencies": {
@@ -47,5 +47,9 @@
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "three": "$three",
+    "@react-three/fiber": "$@react-three/fiber"
   }
 }
