@@ -12,6 +12,203 @@ const GRAPHITI_SERVICE_URL =
 const MEMORY_SERVICE_URL =
   process.env.NEXT_PUBLIC_MEMORY_SERVICE_URL || 'http://localhost:8001';
 
+// ============================================================
+// API Response Types (what graphiti-service actually returns)
+// ============================================================
+
+interface GraphitiEdge {
+  uuid: string;
+  name: string;
+  fact: string;
+  source_entity: string;
+  target_entity: string;
+  created_at: string;
+  valid_at: string;
+  invalid_at: string | null;
+  is_valid: boolean;
+}
+
+interface GraphitiStateResponse {
+  group_id: string;
+  edges: GraphitiEdge[];
+  edges_by_type: Record<string, GraphitiEdge[]>;
+  summary: Record<string, unknown>;
+  total_facts: number;
+}
+
+interface GraphitiEntity {
+  uuid: string;
+  name: string;
+  entity_type?: string;
+  labels?: string[];
+  summary?: string;
+}
+
+// ============================================================
+// Transform API responses to UI-expected formats
+// ============================================================
+
+/**
+ * Transform raw Graphiti state response into GraphitiCurrentState format
+ * that the UI components expect
+ */
+function transformStateResponse(
+  apiResponse: GraphitiStateResponse,
+  userId: string
+): GraphitiCurrentState {
+  const edges = apiResponse.edges || [];
+
+  // Extract location from TravelsTo or LivesIn edges
+  const locationEdge = edges.find(e =>
+    e.name === 'TravelsTo' || e.name === 'TRAVELS_TO' ||
+    e.name === 'LivesIn' || e.name === 'LIVES_IN'
+  );
+
+  // Extract plan from Subscribes or InterestedIn edges
+  const planEdge = edges.find(e =>
+    e.name === 'Subscribes' || e.name === 'InterestedIn' ||
+    e.name === 'INTERESTED_IN'
+  );
+
+  // Extract pet from CaresFor or HasPet edges
+  const petEdge = edges.find(e =>
+    e.name === 'CaresFor' || e.name === 'CARES_FOR' ||
+    e.name === 'HasPet' || e.name === 'HAS_PET'
+  );
+
+  // Extract preferences
+  const preferenceEdges = edges.filter(e =>
+    e.name === 'Prefers' || e.name === 'PREFERS'
+  );
+
+  // Extract interests
+  const interestEdges = edges.filter(e =>
+    e.name === 'InterestedIn' || e.name === 'INTERESTED_IN'
+  );
+
+  // Build personal context from edges
+  const personalContext: GraphitiCurrentState['personal_context'] = {};
+
+  // Extract pet info from CaresFor fact
+  if (petEdge) {
+    const petMatch = petEdge.fact.match(/cat\s+(\w+)/i) || petEdge.fact.match(/pet\s+(\w+)/i);
+    if (petMatch) {
+      personalContext.pet = {
+        name: petMatch[1],
+        species: petEdge.fact.toLowerCase().includes('cat') ? 'cat' : 'unknown',
+      };
+    }
+  }
+
+  // Extract interests from InterestedIn edges
+  if (interestEdges.length > 0) {
+    personalContext.interests = interestEdges.map(edge => ({
+      category: 'general',
+      specific_interest: extractEntityFromFact(edge.fact),
+      enthusiasm_level: 'interested' as const,
+    }));
+  }
+
+  return {
+    user_id: userId,
+    home_market: 'Singapore',
+    current_country: locationEdge ? extractLocationFromFact(locationEdge.fact) : 'Singapore',
+    active_msisdn: '+65XXXXXXXX',
+    roaming_status: locationEdge && locationEdge.name.toLowerCase().includes('travel') ? 'Enabled' : 'Disabled',
+    active_plan: planEdge ? extractEntityFromFact(planEdge.fact) : 'Standard Plan',
+    open_support_issue: null,
+    last_transaction: null,
+    personal_context: Object.keys(personalContext).length > 0 ? personalContext : undefined,
+    // Store raw edges for graph visualization
+    _rawEdges: edges,
+  } as GraphitiCurrentState & { _rawEdges?: GraphitiEdge[] };
+}
+
+/**
+ * Extract location name from a fact string
+ */
+function extractLocationFromFact(fact: string): string {
+  // Common patterns: "travels to Japan", "located in Singapore", "lives in Tokyo"
+  const patterns = [
+    /(?:travel(?:s|ing)?\s+to|going\s+to|visiting)\s+(\w+)/i,
+    /(?:live[sd]?\s+in|located\s+in|currently\s+in)\s+(\w+)/i,
+    /(\w+)\s+(?:next\s+month|soon|tomorrow)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = fact.match(pattern);
+    if (match) return match[1];
+  }
+
+  // Fallback: look for capitalized words that might be locations
+  const capitalizedWords = fact.match(/\b[A-Z][a-z]+\b/g);
+  if (capitalizedWords) {
+    const locations = ['Japan', 'Singapore', 'Tokyo', 'Osaka', 'Thailand', 'Malaysia'];
+    for (const word of capitalizedWords) {
+      if (locations.includes(word)) return word;
+    }
+  }
+
+  return 'Unknown';
+}
+
+/**
+ * Extract entity name from a fact string
+ */
+function extractEntityFromFact(fact: string): string {
+  // Try to extract the object of the fact
+  // "User is interested in the unlimited data plan" -> "unlimited data plan"
+  const patterns = [
+    /interested\s+in\s+(?:the\s+)?(.+?)\.?$/i,
+    /prefers?\s+(.+?)(?:\s+for|\.?$)/i,
+    /subscribes?\s+to\s+(?:the\s+)?(.+?)\.?$/i,
+    /cares?\s+for\s+(?:their\s+)?(.+?)(?:,|\.?$)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = fact.match(pattern);
+    if (match) return match[1].trim();
+  }
+
+  return fact.substring(0, 50);
+}
+
+/**
+ * Transform Graphiti edges into TemporalFact format for UI
+ */
+function transformEdgesToTemporalFacts(edges: GraphitiEdge[]): TemporalFact[] {
+  return edges.map((edge, index) => ({
+    id: edge.uuid || `fact-${index}`,
+    fact_type: edge.name,
+    value: edge.fact,
+    valid_from: edge.valid_at || edge.created_at,
+    valid_to: edge.invalid_at,
+    derived_from: 'support_chat' as const,
+    confidence: edge.is_valid ? 0.9 : 0.5,
+  }));
+}
+
+// Valid source_channel values for graphiti-service
+type ValidSourceChannel = 'whatsapp' | 'website' | 'mobile_app' | 'customer_care' | 'voice' | 'system';
+
+/**
+ * Map internal channel names to valid graphiti-service source_channel values
+ */
+function mapToValidChannel(channel: string): ValidSourceChannel {
+  const channelMap: Record<string, ValidSourceChannel> = {
+    'omnichannel_dashboard': 'website',
+    'in_app_support_chat': 'mobile_app',
+    'in_app_chat': 'mobile_app',
+    'whatsapp': 'whatsapp',
+    'website': 'website',
+    'mobile_app': 'mobile_app',
+    'customer_care': 'customer_care',
+    'voice': 'voice',
+    'system': 'system',
+  };
+  return channelMap[channel] || 'customer_care';
+}
+
 interface IngestAndProcessParams {
   businessEvent: BusinessEvent | null;
   conversationTranscript: string;
@@ -67,7 +264,7 @@ export async function ingestConversation(
       body: JSON.stringify({
         tenant_id: tenantId,
         unified_user_id: metadata.user_id,
-        source_channel: metadata.channel || 'omnichannel_dashboard',
+        source_channel: mapToValidChannel(metadata.channel || 'customer_care'),
         content: transcript,
         episode_name: `omnichannel_${metadata.conversation_id}`,
         use_custom_types: true,
@@ -85,6 +282,7 @@ export async function ingestConversation(
 
 /**
  * Get current state from Graphiti
+ * Transforms the API response into the format expected by UI components
  */
 export async function getCurrentState(
   tenantId: string,
@@ -103,7 +301,8 @@ export async function getCurrentState(
     throw new Error(`Failed to get current state: ${response.statusText}`);
   }
 
-  return response.json();
+  const apiResponse: GraphitiStateResponse = await response.json();
+  return transformStateResponse(apiResponse, userId);
 }
 
 /**
@@ -185,12 +384,16 @@ export async function ingestAndProcess(
   // Wait for Graphiti LLM processing (entity extraction takes 1-2 seconds)
   await new Promise((resolve) => setTimeout(resolve, 2500));
 
-  // Get updated state
-  const [currentState, temporalFacts, contextResponse] = await Promise.all([
+  // Get updated state and context
+  const [currentState, contextResponse] = await Promise.all([
     getCurrentState(tenantId, userId),
-    getTemporalHistory(tenantId, userId),
     buildContext(tenantId, userId, 'current user context'),
   ]);
+
+  // Extract temporal facts from the current state's raw edges
+  // The API returns edges which we transform into temporal facts
+  const rawEdges = (currentState as GraphitiCurrentState & { _rawEdges?: GraphitiEdge[] })._rawEdges || [];
+  const temporalFacts = transformEdgesToTemporalFacts(rawEdges);
 
   // Note: In production, these would come from actual API responses
   // For now, we derive sentiment from the data
