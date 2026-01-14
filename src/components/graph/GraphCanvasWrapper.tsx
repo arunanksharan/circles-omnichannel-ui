@@ -64,21 +64,20 @@ const GraphCanvas = dynamic(
 );
 
 // Graphiti theme configuration - matches the app's design system
+// Note: All colors must be valid hex or rgb colors (no 'transparent' keyword)
 const createGraphitiTheme = () => ({
   canvas: {
-    background: '#0a0a0f', // Matches --background
+    background: '#0a0a0f',
     fog: '#0a0a0f',
   },
   node: {
-    fill: '#6366F1', // --graphiti-node
+    fill: '#6366F1',
     activeFill: '#818CF8',
     opacity: 1,
     selectedOpacity: 1,
     inactiveOpacity: 0.5,
     label: {
       color: '#E2E8F0',
-      stroke: '#0a0a0f',
-      strokeWidth: 2,
       activeColor: '#FFFFFF',
       fontSize: 12,
     },
@@ -88,15 +87,13 @@ const createGraphitiTheme = () => ({
     activeFill: '#A5B4FC',
   },
   edge: {
-    fill: '#A5B4FC', // --graphiti-edge
+    fill: '#A5B4FC',
     activeFill: '#C7D2FE',
     opacity: 0.6,
     selectedOpacity: 1,
     inactiveOpacity: 0.3,
     label: {
       color: '#94A3B8',
-      stroke: '#0a0a0f',
-      strokeWidth: 2,
       activeColor: '#CBD5E1',
       fontSize: 10,
     },
@@ -106,8 +103,8 @@ const createGraphitiTheme = () => ({
     activeFill: '#C7D2FE',
   },
   lasso: {
-    background: 'rgba(99, 102, 241, 0.15)',
-    border: '2px solid rgba(99, 102, 241, 0.5)',
+    background: '#6366F1',
+    border: '#818CF8',
   },
   cluster: {
     stroke: '#334155',
@@ -116,7 +113,6 @@ const createGraphitiTheme = () => ({
     selectedOpacity: 0.6,
     inactiveOpacity: 0.15,
     label: {
-      stroke: '#0a0a0f',
       color: '#E2E8F0',
       fontSize: 14,
     },
@@ -189,7 +185,7 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.06) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.06) 0%, rgba(10, 10, 15, 0) 60%)',
         }}
       />
 
@@ -215,13 +211,8 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
         maxNodeSize={20}
         draggable={true}
         cameraMode="pan"
-        // Zoom controls - fixed for better 2-finger scroll
         minDistance={100}
         maxDistance={2000}
-        minZoom={-5}
-        maxZoom={10}
-        // Use a web font for sharper text rendering
-        labelFontUrl="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2"
         selections={selectedNode ? [selectedNode] : []}
         actives={hoveredNode ? [hoveredNode] : []}
         onNodeClick={handleNodeClick}
