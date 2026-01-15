@@ -21,14 +21,10 @@ const path = require('path');
 
 // Detect environment
 const isProduction = process.env.NODE_ENV === 'production';
-const isUbuntu = process.platform === 'linux';
 
-// Configuration
+// Configuration - use __dirname for dynamic path resolution
 const SERVICE_NAME = 'omnichannel-ui';
-const BASE_PATH = isUbuntu
-  ? '/opt/circles/omnichannel-ui'
-  : '/Users/paruljuniwal/kuzushi_labs/circles_aditya/omnichannel-ui';
-
+const BASE_PATH = __dirname;
 const PORT = 3030;
 
 module.exports = {
@@ -57,8 +53,8 @@ module.exports = {
       restart_delay: 3000,
 
       // Logging
-      error_file: `${BASE_PATH}/logs/error.log`,
-      out_file: `${BASE_PATH}/logs/out.log`,
+      error_file: path.join(BASE_PATH, 'logs', 'error.log'),
+      out_file: path.join(BASE_PATH, 'logs', 'out.log'),
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
 

@@ -169,7 +169,7 @@ User: That's all for now. Thank you!`,
     conversationMetadata: {
       user_id: '000000000000000000000001', // Matches chitchat devUserId
       conversation_id: 'conv_demo_sync_001',
-      channel: 'omnichannel_dashboard',
+      channel: 'web',
       started_at: '2026-01-15T10:00:00+08:00',
       ended_at: '2026-01-15T10:15:00+08:00',
     },

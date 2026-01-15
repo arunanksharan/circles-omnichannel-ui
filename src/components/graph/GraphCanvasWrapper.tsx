@@ -151,7 +151,7 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
   // Focus on selected node with smooth zoom
   useEffect(() => {
     if (mounted && graphRef.current && selectedNode) {
-      graphRef.current?.fitNodesInView([selectedNode], { singleNode: true });
+      graphRef.current?.fitNodesInView([selectedNode]);
     }
   }, [mounted, selectedNode]);
 
@@ -199,7 +199,6 @@ const GraphCanvasWrapper = memo(function GraphCanvasWrapper({
         layoutOverrides={{
           linkDistance: 120,
           nodeStrength: -600,
-          linkStrength: 0.6,
         }}
         labelType="all"
         edgeLabelPosition="natural"
