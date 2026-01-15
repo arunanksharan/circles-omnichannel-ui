@@ -374,15 +374,27 @@ export async function ingestAndProcess(
 
   // Ingest conversation directly to Graphiti (skip business event for now)
   if (params.conversationTranscript && params.conversationMetadata) {
+    console.log('[Graphiti] Starting ingestion...', {
+      transcriptLength: params.conversationTranscript.length,
+      userId: params.conversationMetadata.user_id,
+      channel: params.conversationMetadata.channel,
+    });
     await ingestConversation(
       tenantId,
       params.conversationTranscript,
       params.conversationMetadata
     );
+    console.log('[Graphiti] Ingestion complete, waiting for LLM processing...');
+  } else {
+    console.warn('[Graphiti] Skipping ingestion - missing data:', {
+      hasTranscript: !!params.conversationTranscript,
+      hasMetadata: !!params.conversationMetadata,
+    });
   }
 
-  // Wait for Graphiti LLM processing (entity extraction takes 1-2 seconds)
-  await new Promise((resolve) => setTimeout(resolve, 2500));
+  // Wait for Graphiti LLM processing (entity extraction takes 15-20 seconds)
+  // This is intentionally long as LLM needs time to extract entities/relationships
+  await new Promise((resolve) => setTimeout(resolve, 20000));
 
   // Get updated state and context
   const [currentState, contextResponse] = await Promise.all([

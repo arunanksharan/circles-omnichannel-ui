@@ -54,8 +54,18 @@ interface DemoState {
   reset: () => void;
 }
 
+// Read default mode from environment variable (defaults to 'mock' if not set)
+const getDefaultMode = (): DemoMode => {
+  if (typeof window !== 'undefined') {
+    const envMockMode = process.env.NEXT_PUBLIC_DEFAULT_MOCK_MODE;
+    // If NEXT_PUBLIC_DEFAULT_MOCK_MODE is 'false', use live mode
+    return envMockMode === 'false' ? 'live' : 'mock';
+  }
+  return 'mock';
+};
+
 const initialState = {
-  mode: 'mock' as DemoMode,
+  mode: getDefaultMode(),
   businessEvent: null,
   conversationTranscript: '',
   conversationMetadata: null,
@@ -163,9 +173,18 @@ export const useDemoStore = create<DemoState>((set, get) => ({
         // Live API mode
         const { ingestAndProcess } = await import('@/lib/api/graphiti-service');
 
+        // Combine both transcripts (telecom and personal context)
+        // Use whichever has content, or combine if both have content
+        const combinedTranscript = [
+          state.conversationTranscript,
+          state.personalContextTranscript,
+        ]
+          .filter((t) => t.trim().length > 0)
+          .join('\n\n');
+
         const response = await ingestAndProcess({
           businessEvent: state.businessEvent,
-          conversationTranscript: state.conversationTranscript,
+          conversationTranscript: combinedTranscript,
           conversationMetadata: state.conversationMetadata,
         });
 
