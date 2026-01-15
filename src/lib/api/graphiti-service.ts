@@ -250,12 +250,21 @@ export async function ingestBusinessEvent(
 /**
  * Ingest conversation transcript directly into Graphiti service
  * This bypasses memory-service and calls graphiti episodes endpoint directly
+ *
+ * @param tenantId - Tenant ID (e.g., 'sg')
+ * @param transcript - Conversation transcript to ingest
+ * @param metadata - Conversation metadata
+ * @param overrideUserId - Optional: Override the user ID from metadata (for unified testing)
  */
 export async function ingestConversation(
   tenantId: string,
   transcript: string,
-  metadata: ConversationMetadata
+  metadata: ConversationMetadata,
+  overrideUserId?: string
 ): Promise<{ success: boolean; episode_id?: string }> {
+  // Use override if provided, otherwise fall back to metadata
+  const effectiveUserId = overrideUserId || metadata.user_id;
+
   const response = await fetch(
     `${GRAPHITI_SERVICE_URL}/api/v1/graphiti/episodes`,
     {
@@ -263,7 +272,7 @@ export async function ingestConversation(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tenant_id: tenantId,
-        unified_user_id: metadata.user_id,
+        unified_user_id: effectiveUserId,
         source_channel: mapToValidChannel(metadata.channel || 'customer_care'),
         content: transcript,
         episode_name: `omnichannel_${metadata.conversation_id}`,
@@ -366,23 +375,24 @@ export async function ingestAndProcess(
 ): Promise<ProcessResponse> {
   // Must use 'sg' tenant - circles-memory-service only allows: sg,jp,tw,au,mn
   const tenantId = 'sg';
-  // Default to chitchat demo user ID for end-to-end testing
-  const userId =
-    params.businessEvent?.user_id ||
-    params.conversationMetadata?.user_id ||
-    '000000000000000000000001';
+  // HARDCODED: Always use chitchat dev user ID for unified testing
+  // This ensures all ingested facts are associated with the same user
+  // that chitchat-frontend-react uses (devUserId)
+  const userId = '000000000000000000000001';
 
   // Ingest conversation directly to Graphiti (skip business event for now)
   if (params.conversationTranscript && params.conversationMetadata) {
     console.log('[Graphiti] Starting ingestion...', {
       transcriptLength: params.conversationTranscript.length,
-      userId: params.conversationMetadata.user_id,
+      originalUserId: params.conversationMetadata.user_id,
+      effectiveUserId: userId,  // Hardcoded dev user ID
       channel: params.conversationMetadata.channel,
     });
     await ingestConversation(
       tenantId,
       params.conversationTranscript,
-      params.conversationMetadata
+      params.conversationMetadata,
+      userId  // Override with hardcoded dev user ID
     );
     console.log('[Graphiti] Ingestion complete, waiting for LLM processing...');
   } else {
