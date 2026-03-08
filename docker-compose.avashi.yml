@@ -1,0 +1,64 @@
+# =============================================================================
+# Avashi Platform — Omnichannel UI (Memory Ingestion & Knowledge Graph)
+# =============================================================================
+# THIS IS THE AVASHI DEPLOYMENT — separate from ChitChat/Circles.
+#
+# Service: Next.js 16 frontend for memory ingestion, knowledge graph
+#          visualization, and data management
+#
+# Domain: omni.avashi.fun (or as configured)
+#
+# Dependencies:
+#   - avashi-memory-api      (memory ingestion API on port 8008)
+#   - avashi-graphiti-service (knowledge graph API on port 9011)
+#
+# Prerequisites:
+#   - avashi-network must exist (start docker-compose.avashi-infra.yml first)
+#   - Memory service must be running (docker-compose.avashi.yml in circles-memory-service)
+#
+# Usage:
+#   docker compose -f docker-compose.avashi.yml up -d
+#   docker compose -f docker-compose.avashi.yml up -d --build
+# =============================================================================
+
+services:
+  avashi-omnichannel-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        # These are baked into the Next.js build (NEXT_PUBLIC_* vars)
+        - NEXT_PUBLIC_MEMORY_SERVICE_URL=http://avashi-memory-api:8008
+        - NEXT_PUBLIC_GRAPHITI_URL=http://avashi-graphiti-service:9011
+        - NEXT_PUBLIC_DEFAULT_MOCK_MODE=false
+    container_name: avashi-omnichannel-ui
+    restart: unless-stopped
+    ports:
+      - "3030:3030"
+    environment:
+      NODE_ENV: production
+      PORT: 3030
+    networks:
+      - avashi-network
+    # Cross-file dependencies (must be running on avashi-network):
+    #   - avashi-memory-api      (circles-memory-service/docker-compose.avashi.yml)
+    #   - avashi-graphiti-service (circles-memory-service/docker-compose.avashi.yml)
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3030"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+# =============================================================================
+# Network — References the shared Avashi network (created by infra compose)
+# =============================================================================
+networks:
+  avashi-network:
+    external: true
+    name: avashi-network
